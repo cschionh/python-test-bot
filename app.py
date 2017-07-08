@@ -31,26 +31,60 @@ def webhook():
     if data["object"] == "page":
 
         for entry in data["entry"]:
-            for messaging_event in entry["messaging"]:
+            if entry["messaging"]:  # messaging in work chat
+                for messaging_event in entry["messaging"]:
 
-                if messaging_event.get("message"):  # someone sent us a message
+                    if messaging_event.get("message"):  # someone sent us a message
 
-                    sender_id = messaging_event["sender"]["id"]        # the facebook ID of the person sending you the message
-                    recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
-                    message_text = messaging_event["message"]["text"]  # the message's text
+                        sender_id = messaging_event["sender"]["id"]        # the facebook ID of the person sending you the message
+                        recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
+                        message_text = messaging_event["message"]["text"]  # the message's text
 
-                    send_message(sender_id, "roger that!")
+                        send_message(sender_id, "roger that!")
 
-                if messaging_event.get("delivery"):  # delivery confirmation
-                    pass
+                    if messaging_event.get("delivery"):  # delivery confirmation
+                        pass
 
-                if messaging_event.get("optin"):  # optin confirmation
-                    pass
+                    if messaging_event.get("optin"):  # optin confirmation
+                        pass
 
-                if messaging_event.get("postback"):  # user clicked/tapped "postback" button in earlier message
-                    pass
+                    if messaging_event.get("postback"):  # user clicked/tapped "postback" button in earlier message
+                        pass
+            if entry["changes"]:
+                for changes_event in entry["changes"]:
+                    if changes_event.get("message"):
+                        mention_bot = changes_event["message_tags"]["name"]
+                        message_text = changes_event["message"]
+                        comment_id = changes_event["comment_id"]
+                        found_message = message_text.find(mention_bot)
+                        trim_message = message_text[found_message+1:len(message_text)].lstrip()
+                        log("trim_message={msg1} found_message={msg2}".format(msg1=trim_message, msg2=found_message))
+                        if trim_message == "run":
+                            createPost("ok to " + trim_message, comment_id)
+                        else:
+                            createPost("Not ok to " + trim_message, comment_id)
 
     return "ok", 200
+
+
+def createPost(message_text, comment_id):
+    log("creating message to {recipient}: {text}".format(recipient=comment_id, text=message_text))
+
+    params = {
+        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = json.dumps({
+        "message": {
+            "text": message_text
+        }
+    })
+    r = requests.post("https://graph.facebook.com" + "/" + comment_id + "/comments", params=params, headers=headers, data=data)
+    if r.status_code != 200:
+        log(r.status_code)
+        log(r.text)
 
 
 def send_message(recipient_id, message_text):
@@ -80,6 +114,7 @@ def send_message(recipient_id, message_text):
 def log(message):  # simple wrapper for logging to stdout on heroku
     print str(message)
     sys.stdout.flush()
+
 
 
 if __name__ == '__main__':
