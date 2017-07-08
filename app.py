@@ -58,8 +58,9 @@ def webhook():
                         comment_id = changes_event["comment_id"]
                         log("mention_bot={msg1} message_text={msg2} comment_id={msg3}".format(msg1=mention_bot, msg2=message_text, msg3=comment_id))
 
-                        found_message = message_text.find(mention_bot)
-                        trim_message = message_text[found_message+1:len(message_text)].lstrip()
+                        # found_message = message_text.find(mention_bot)
+                        # trim_message = message_text[found_message+1:len(message_text)]
+                        # trim_message = trim_message.lstrip()
 
                         log("trim_message={msg1} found_message={msg2}".format(msg1=trim_message, msg2=found_message))
                         # if trim_message == "run":
