@@ -31,7 +31,7 @@ def webhook():
     if data["object"] == "page":
 
         for entry in data["entry"]:
-            if entry["messaging"]:  # messaging in work chat
+            if "messaging" in entry:  # messaging in work chat
                 for messaging_event in entry["messaging"]:
 
                     if messaging_event.get("message"):  # someone sent us a message
@@ -50,7 +50,7 @@ def webhook():
 
                     if messaging_event.get("postback"):  # user clicked/tapped "postback" button in earlier message
                         pass
-            if entry["changes"]:
+            elif "changes" in entry: # mention in group
                 for changes_event in entry["changes"]:
                     if changes_event.get("message"):
                         mention_bot = changes_event["message_tags"]["name"]
