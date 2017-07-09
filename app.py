@@ -5,6 +5,8 @@ import json
 import requests
 from flask import Flask, request
 
+GRAPH_URL="https://graph.facebook.com"
+
 app = Flask(__name__)
 
 
@@ -58,16 +60,20 @@ def webhook():
                     if "mention" in changes_event["field"]:
                     # if changes_event["field"].get("mention"):
                         log("inside mention logic...")
-                        # message_tags is a list, hence needs to loop to get each value
+                        # message_tags is a list, hence needs to loop to get each value.
+                        # if found the page name, get the name and quit the loop
                         for message_tags in changes_event["value"]["message_tags"]:
                             if message_tags["type"] == "page":
                                 mention_bot = message_tags["name"]
                                 log("mention_bot={msg1}".format(msg1=mention_bot))
+                                pass
 
                         message_text = changes_event["value"]["message"]
                         log("message_text={msg1}".format(msg1=message_text))
                         post_id = changes_event["value"]["post_id"]
                         log("post_id={msg1}".format(msg1=post_id))
+
+                        getAppInfo()
 
                         # log("mention_bot={msg1} message_text={msg2} post_id={msg3}".format(msg1=mention_bot, msg2=message_text, msg3=post_id))
 
@@ -85,6 +91,28 @@ def webhook():
 
     return "ok", 200
 
+def getAppInfo():
+    params = {
+        "fields": "id,name",
+        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    # data = json.dumps({
+    #     "message": {
+    #         "name":
+    #     }
+    # })
+
+    r = requests.get(GRAPH_URL + "/me", params=params, headers=headers)
+    result_json = json.loads(r.text, r.encoding)
+    log("result_json={msg1}".format(msg1=result_json))
+
+    if r.status_code != 200:
+        log(r.status_code)
+        log(r.text)
+
 
 def createPost(message_text, comment_id):
     log("creating message to {recipient}: {text}".format(recipient=comment_id, text=message_text))
@@ -100,7 +128,7 @@ def createPost(message_text, comment_id):
             "text": message_text
         }
     })
-    r = requests.post("https://graph.facebook.com" + "/" + comment_id + "/comments", params=params, headers=headers, data=data)
+    r = requests.post(GRAPH_URL + "/" + comment_id + "/comments", params=params, headers=headers, data=data)
     if r.status_code != 200:
         log(r.status_code)
         log(r.text)
@@ -124,7 +152,7 @@ def send_message(recipient_id, message_text):
             "text": message_text
         }
     })
-    r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
+    r = requests.post(GRAPH_URL + "/v2.6/me/messages", params=params, headers=headers, data=data)
     if r.status_code != 200:
         log(r.status_code)
         log(r.text)
