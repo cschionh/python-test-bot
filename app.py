@@ -58,8 +58,9 @@ def webhook():
                     if "mention" in changes_event["field"]:
                     # if changes_event["field"].get("mention"):
                         log("inside mention logic...")
-                        mention_bot = changes_event["value"]["message_tags"]["name"]
-                        log("mention_bot={msg1}".format(msg1=mention_bot))
+                        # message_tags is a list, hence needs to loop to get each value
+                        # mention_bot = changes_event["value"]["message_tags"]["name"]
+                        # log("mention_bot={msg1}".format(msg1=mention_bot))
                         message_text = changes_event["value"]["message"]
                         log("message_text={msg1}".format(msg1=message_text))
                         post_id = changes_event["value"]["post_id"]
