@@ -56,8 +56,8 @@ def webhook():
                     if changes_event["mention"]:
                         mention_bot = changes_event["value"]["message_tags"]["name"]
                         message_text = changes_event["value"]["message"]
-                        comment_id = changes_event["value"]["comment_id"]
-                        log("mention_bot={msg1} message_text={msg2} comment_id={msg3}".format(msg1=mention_bot, msg2=message_text, msg3=comment_id))
+                        post_id = changes_event["value"]["post_id"]
+                        log("mention_bot={msg1} message_text={msg2} post_id={msg3}".format(msg1=mention_bot, msg2=message_text, msg3=post_id))
 
                         # found_message = message_text.find(mention_bot)
                         # trim_message = message_text[found_message+1:len(message_text)]
