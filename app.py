@@ -86,7 +86,7 @@ def webhook():
 
 
                         found_message_idx = message_text.find(RUN_COMMAND)
-                        if found_message_idx > 0:
+                        if found_message_idx > -1:
                             log("ok to run the job")
                             message_ack="ok to run the job"
                         else:
