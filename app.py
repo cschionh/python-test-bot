@@ -53,7 +53,8 @@ def webhook():
             elif "changes" in entry: # mention in group
                 for changes_event in entry["changes"]:
                     log(changes_event)
-                    if changes_event["mention"]:
+                    # if changes_event["mention"]:
+                    if "mention" in changes_event:
                         mention_bot = changes_event["value"]["message_tags"]["name"]
                         message_text = changes_event["value"]["message"]
                         post_id = changes_event["value"]["post_id"]
