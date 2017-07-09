@@ -54,15 +54,16 @@ def webhook():
                 for changes_event in entry["changes"]:
                     log(changes_event)
                     # if changes_event["mention"]:
-                    log("mention={msg1}".format(msg1=changes_event["mention"]))
-                    if "mention" in changes_event:
+                    # log("mention={msg1}".format(msg1=changes_event["mention"]))
+                    # if "mention" in changes_event["field"]:
+                    if changes_event["field"].get("mention"):
                         log("inside mention logic...")
                         mention_bot = changes_event["value"]["message_tags"]["name"]
-                        log(mention_bot)
+                        log("mention_bot={msg1}".format(msg1=mention_bot))
                         message_text = changes_event["value"]["message"]
-                        log(message_text)
+                        log("message_text={msg1}".format(msg1=message_text))
                         post_id = changes_event["value"]["post_id"]
-                        log(post_id)
+                        log("post_id={msg1}".format(msg1=post_id))
 
                         # log("mention_bot={msg1} message_text={msg2} post_id={msg3}".format(msg1=mention_bot, msg2=message_text, msg3=post_id))
 
