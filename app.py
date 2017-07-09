@@ -6,6 +6,7 @@ import requests
 from flask import Flask, request
 
 GRAPH_URL="https://graph.facebook.com"
+RUN_COMMAND = "*run"
 
 app = Flask(__name__)
 
@@ -73,12 +74,27 @@ def webhook():
                         post_id = changes_event["value"]["post_id"]
                         log("post_id={msg1}".format(msg1=post_id))
 
-                        getAppInfo()
+                        if changes_event["value"]["item"] == "comment":
+                            mention_id = changes_event["value"]["comment_id"]
+                        else:
+                            mention_id = changes_event["value"]["post_id"]
+
+                        # appInfo=getAppInfo()
+                        # appName=appInfo["name"]
 
                         # log("mention_bot={msg1} message_text={msg2} post_id={msg3}".format(msg1=mention_bot, msg2=message_text, msg3=post_id))
 
 
-                        # found_message = message_text.find(mention_bot)
+                        found_message_idx = message_text.find(RUN_COMMAND)
+                        if found_message_idx > 0:
+                            log("ok to run the job")
+                            message_ack="ok to run the job"
+                        else:
+                            log("cannot run the job")
+                            message_ack = "cannot run the job"
+
+                        createPost(message_ack, mention_id)
+
                         # trim_message = message_text[found_message+1:len(message_text)]
                         # trim_message = trim_message.lstrip()
 
@@ -99,11 +115,6 @@ def getAppInfo():
     headers = {
         "Content-Type": "application/json"
     }
-    # data = json.dumps({
-    #     "message": {
-    #         "name":
-    #     }
-    # })
 
     r = requests.get(GRAPH_URL + "/me", params=params, headers=headers)
     result_json = json.loads(r.text, r.encoding)
@@ -112,6 +123,9 @@ def getAppInfo():
     if r.status_code != 200:
         log(r.status_code)
         log(r.text)
+        return ""
+    else:
+        return result_json
 
 
 def createPost(message_text, comment_id):
