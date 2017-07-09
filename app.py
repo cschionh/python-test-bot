@@ -61,6 +61,15 @@ def webhook():
                     if "mention" in changes_event["field"]:
                     # if changes_event["field"].get("mention"):
                         log("inside mention logic...")
+
+                        # determine whether the app is mentioned in a post/comment/reply
+                        if changes_event["value"]["item"] == "comment":
+                            mention_id = changes_event["value"]["comment_id"]
+                        else:
+                            mention_id = changes_event["value"]["post_id"]
+
+                        giveLike(mention_id) #give a like to the post/comment/reply
+
                         # message_tags is a list, hence needs to loop to get each value.
                         # if found the page name, get the name and quit the loop
                         for message_tags in changes_event["value"]["message_tags"]:
@@ -71,13 +80,9 @@ def webhook():
 
                         message_text = changes_event["value"]["message"]
                         log("message_text={msg1}".format(msg1=message_text))
-                        post_id = changes_event["value"]["post_id"]
-                        log("post_id={msg1}".format(msg1=post_id))
+                        # post_id = changes_event["value"]["post_id"]
+                        # log("post_id={msg1}".format(msg1=post_id))
 
-                        if changes_event["value"]["item"] == "comment":
-                            mention_id = changes_event["value"]["comment_id"]
-                        else:
-                            mention_id = changes_event["value"]["post_id"]
 
                         # appInfo=getAppInfo()
                         # appName=appInfo["name"]
@@ -89,21 +94,15 @@ def webhook():
                         if found_message_idx > -1:
                             log("ok to run the job")
                             message_ack="ok to run the job"
+
+                            #call function to execute batch update for all members
+
                         else:
                             log("cannot run the job")
                             message_ack = "cannot run the job"
 
                         createPost(message_ack, mention_id)
 
-                        # trim_message = message_text[found_message+1:len(message_text)]
-                        # trim_message = trim_message.lstrip()
-
-                        # log("trim_message={msg1} found_message={msg2}".format(msg1=trim_message, msg2=found_message))
-
-                        # if trim_message == "run":
-                        #     createPost("ok to " + trim_message, comment_id)
-                        # else:
-                        #     createPost("Not ok to " + trim_message, comment_id)
 
     return "ok", 200
 
@@ -126,6 +125,20 @@ def getAppInfo():
         return ""
     else:
         return result_json
+
+def giveLike(comment_id):
+    log("like a post/comment/reply to {recipient}".format(recipient=comment_id))
+
+    params = {
+        "access_token": os.environ["PAGE_ACCESS_TOKEN"]
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    r = requests.post(GRAPH_URL + "/" + comment_id + "/likes", params=params, headers=headers)
+    if r.status_code != 200:
+        log(r.status_code)
+        log(r.text)
 
 
 def createPost(message_text, comment_id):
