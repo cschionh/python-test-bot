@@ -6,6 +6,9 @@ import requests
 from flask import Flask, request
 
 GRAPH_URL="https://graph.facebook.com"
+NOTIFY_GP_ID = "1854531518146187" #test group ID
+COMMENT_EDGE = "/comments"
+FEED_EDGE = "/feed"
 RUN_COMMAND = "*run"
 
 app = Flask(__name__)
@@ -107,8 +110,17 @@ def webhook():
                             log("cannot run the job")
                             message_ack = "cannot run the job"
 
-                        createPost(message_ack, mention_id)
+                        createPost(message_ack, mention_id, COMMENT_EDGE)
 
+    elif data["object"] == "workplace_security":
+        for entry in data["entry"]:
+            if "changes" in entry:
+                for changes_event in entry["changes"]:
+                    if "admin_activity" in changes_event["field"]:
+                        newUserID = changes_event["value"]["target_id"]
+                        log("new account has been created - newUserID={msg1}".format(msg1=newUserID))
+                        message_ack = "new account has been created - newUserID={msg1}".format(msg1=newUserID)
+                        createPost(message_ack, NOTIFY_GP_ID, FEED_EDGE)
 
     return "ok", 200
 
@@ -147,7 +159,7 @@ def giveLike(comment_id):
         log(r.text)
 
 
-def createPost(message_text, comment_id):
+def createPost(message_text, comment_id, edge):
     log("creating message to {recipient}: {text}".format(recipient=comment_id, text=message_text))
 
     params = {
@@ -159,7 +171,8 @@ def createPost(message_text, comment_id):
     data = json.dumps({
         "message": message_text
     })
-    r = requests.post(GRAPH_URL + "/" + comment_id + "/comments", params=params, headers=headers, data=data)
+    # r = requests.post(GRAPH_URL + "/" + comment_id + "/comments", params=params, headers=headers, data=data)
+    r = requests.post(GRAPH_URL + "/" + comment_id + edge, params=params, headers=headers, data=data)
     if r.status_code != 200:
         log(r.status_code)
         log(r.text)
